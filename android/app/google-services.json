@@ -1,0 +1,57 @@
+{
+  "project_info": {
+    "project_number": "231381196044",
+    "firebase_url": "https://wallpapro-38882.firebaseio.com",
+    "project_id": "wallpapro-38882",
+    "storage_bucket": "wallpapro-38882.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:231381196044:android:e4c479232356168cc97d29",
+        "android_client_info": {
+          "package_name": "com.hellodearcode.wallpapro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "231381196044-mccg6s48icqi45pm23ida5k3akick5nb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hellodearcode.wallpapro",
+            "certificate_hash": "ff071902a1a6c2a43342f812b5b64c07e3a1fd43"
+          }
+        },
+        {
+          "client_id": "231381196044-56qracs6tn3rig9vif441lhl04je25cr.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.hellodearcode.wallpapro",
+            "certificate_hash": "a65929078220f26535d0df1ae9314ba8ce11207b"
+          }
+        },
+        {
+          "client_id": "231381196044-4ff66hjrej8gh2ecfiq79uprgmtadapd.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7yz1dHp6HReLp606ePoSAah3i6F0GAy8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "231381196044-4ff66hjrej8gh2ecfiq79uprgmtadapd.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      },
+      "admob_app_id": "ca-app-pub-1038752045714760~7533155955"
+    }
+  ],
+  "configuration_version": "1"
+}
