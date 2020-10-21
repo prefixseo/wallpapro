@@ -12,6 +12,8 @@ import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:share/share.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'package:wallpaperplugin/wallpaperplugin.dart';
 import 'package:wallpapro/_screen/_search.dart';
 import 'package:wallpapro/customHeaderCLipper.dart';
@@ -74,16 +76,17 @@ class _HomeState extends State<Home> {
   }
 
   var tagsList = [
-    "Animals",
+    "Animal",
     "Artistic",
-    "Bikes",
-    "Cars",
-    "Colors",
+    "Bike",
+    "Car",
+    "Color",
     "Event",
     "Fruit",
     "Food",
-    "Flowers"
-    "Feelings",
+    "Flower",
+    "Feeling",
+    "Gaming",
     "Gradients",
     "Inspirational",
     "Nature",
@@ -146,9 +149,29 @@ class _HomeState extends State<Home> {
                   ),
                 ],
               )
-            : Center(
-                child: CircularProgressIndicator(),
-              ));
+            : 
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+              colors: [Color(0xff768591), Color(0xffffffff) ],
+              stops: [0.2, 0.7],
+
+            )
+          ),
+          child: Center(
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Image.asset('assets/splash_icon.png'),
+                SizedBox(height: 10.0,),
+                SizedBox(height: 200.0,width: 200.0,child: Lottie.asset("assets/splash_loading.json"),)
+              ],
+            ),
+          ),
+        )
+    );
   }
 
   static Future<bool> _checkAndGetPermission() async {
@@ -272,7 +295,7 @@ class _HomeState extends State<Home> {
                                     });
                                     _downloadAndApply(winfo.regularUrl);
                                   },
-                                  color: Colors.brown,
+                                  color: Theme.of(context).primaryColor,
                                   child: Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: <Widget>[
@@ -552,7 +575,7 @@ class _HomeState extends State<Home> {
             children: [
               Material(
                 elevation: 20.0,
-                shadowColor: Colors.brown,
+                shadowColor: Theme.of(context).primaryColor,
                 child: TextField(
                   controller: _searchBoxController,
                   autofocus: false,
@@ -560,23 +583,31 @@ class _HomeState extends State<Home> {
                     contentPadding: EdgeInsets.all(10.0),
                     border: InputBorder.none,
                     hintText: "Search By Keyword",
-                    hintStyle: TextStyle(color: Colors.brown.withOpacity(0.6)),
+                    hintStyle: TextStyle(color: Theme.of(context).primaryColor.withOpacity(0.6)),
                   ),
                   textInputAction: TextInputAction.search,
                   style: TextStyle(
-                    color: Colors.brown,
+                    color: Theme.of(context).primaryColor,
                     fontSize: 16.0,
                     fontFamily: 'ArchitectsDaughter',
                   ),
                   onChanged: (query) {},
                   onSubmitted: (w) {
+                    _searchBoxController.clear();
+                    FocusScopeNode currentFocus = FocusScope.of(context);
+                    if (!currentFocus.hasPrimaryFocus) {
+                      currentFocus.unfocus();
+                    }
                     if (w.length > 1) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => SearchWallpaper(
-                                searchQuery: _searchBoxController.value.text)),
+                          builder: (context) => SearchWallpaper(
+                            searchQuery: w
+                          )
+                        ),
                       );
+
                     }
                   },
                 ),
@@ -586,15 +617,26 @@ class _HomeState extends State<Home> {
                 child: IconButton(
                   icon: Icon(
                     Icons.search,
-                    color: Colors.brown,
+                    color: Theme.of(context).primaryColor,
                   ),
                   onPressed: () {
-                    if (_searchBoxController.value.text.length > 1) {
+                    String _qq = _searchBoxController.value.text;
+                    _searchBoxController.clear();
+
+                    FocusScopeNode currentFocus = FocusScope.of(context);
+
+                    if (!currentFocus.hasPrimaryFocus) {
+                      currentFocus.unfocus();
+                    }
+
+                    if (_qq.length > 1) {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                            builder: (context) => SearchWallpaper(
-                                searchQuery: _searchBoxController.value.text)),
+                          builder: (context) => SearchWallpaper(
+                            searchQuery: _qq
+                          )
+                        ),
                       );
                     }
                   },
@@ -607,38 +649,62 @@ class _HomeState extends State<Home> {
           right: 10,
           child: IconButton(
             icon: Icon(
-              Icons.rate_review_outlined,
+              Icons.share,
               color: Colors.white,
               size: 32.0,
             ),
             onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) => SearchWallpaper(searchQuery: "dark")),
+              Share.share(
+                "Hey, I am Using WallpaPro best wallpaper One Tap Download and Apply Application\nYou can also Download and Get Free HD Wallpapers with One Tap \n https://play.google.com/store/apps/details?id=com.hellodearcode.wallpapro",
+                subject: "Wallpapro HD mobile backgrounds app",
               );
             },
           ),
         ),
         Positioned(
           left: 10,
-          child: IconButton(
-            icon: Icon(
-              Icons.info_outline_rounded,
-              color: Colors.white,
-              size: 32.0,
-            ),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (context) =>
-                        SearchWallpaper(searchQuery: "amazing")),
-              );
+          child: PopupMenuButton<String>(
+            icon: Icon(Icons.menu,color: Colors.white,size: 32,),
+            onSelected: (c){
+              switch(c){
+                case 'About':
+                  launchLandingPage();
+                  break;
+                case 'Rate Us':
+                  launchRateUs();
+                  break;
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return {'About','Rate Us'}.map((String choice) {
+                return PopupMenuItem<String>(
+                  value: choice,
+                  child: Text(choice),
+                );
+              }).toList();
             },
           ),
         )
       ],
     );
+  }
+
+  // -- landing page
+  launchLandingPage() async {
+    const url = 'https://wallpapro.hellodearcode.com';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
+  }
+  // -- rate us
+  launchRateUs() async {
+    const url = 'market://details?id=com.hellodearcode.wallpapro&showAllReviews=true';
+    if (await canLaunch(url)) {
+      await launch(url);
+    } else {
+      throw 'Could not launch $url';
+    }
   }
 }

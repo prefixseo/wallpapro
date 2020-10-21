@@ -1,11 +1,10 @@
-import 'package:connectivity/connectivity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:wallpapro/_screen/home.dart';
 
 void main() {
   SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
-      statusBarColor: Colors.brown
+      statusBarColor: Color(0xff768591)
   ));
   runApp(MyApp());
 }
@@ -19,10 +18,10 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: "Wallpa Pro",
+      title: "Wallpapro",
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primaryColor: Colors.brown,
+        primaryColor: Color(0xff768591),
       ),
       home: Home(),
     );

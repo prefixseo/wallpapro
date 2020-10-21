@@ -35,6 +35,7 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
   List<Wallpaper> _searchWallpaper = new List<Wallpaper>();
 
   bool isDownloading = false;
+  bool overlayTour = true;
   var _localPathDl = "";
   SwiperController _swiperController = new SwiperController();
 
@@ -94,7 +95,7 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
           children: [
             Positioned(
               child: IconButton(
-                icon: Icon(Icons.arrow_back_sharp,color: Colors.brown,),
+                icon: Icon(Icons.arrow_back_sharp,color: Theme.of(context).primaryColor,),
                 onPressed: (){
                   Navigator.of(context).pop();
                 }
@@ -184,13 +185,45 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                       );
                     },
                     itemCount: _searchWallpaper.length,
-                    autoplay: true,
                     viewportFraction: 1,
                     scale: 1,
                   ) : Center(child: CircularProgressIndicator(),),
                 ),
               ],
             ),
+            (overlayTour) ? Container(
+              height: MediaQuery.of(context).size.height,
+              width: MediaQuery.of(context).size.width,
+              color: Colors.black.withAlpha(150),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "Swipe Left & Right to\nExplore Search Results",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontFamily: "ArchitectsDaughter",
+                      fontSize: 18.0
+                    ),
+                  ),
+                  SizedBox(
+                    height: 200.0,
+                    width: 200.0,
+                    child: Lottie.asset("assets/swipe.json"),
+                  ),
+                  RaisedButton(
+                    child: Text("Got it!"),
+                    color: Colors.white,
+                    onPressed: (){
+                      setState(() {
+                        overlayTour = false;
+                      });
+                    }
+                  )
+                ],
+              ),
+            ) : Center(),
           ],
         ),
       ),
@@ -268,7 +301,7 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                               });
                               _downloadAndApply(winfo.regularUrl);
                             },
-                            color: Colors.brown,
+                            color: Theme.of(context).primaryColor,
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: <Widget>[
