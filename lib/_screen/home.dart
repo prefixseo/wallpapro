@@ -78,7 +78,7 @@ class _HomeState extends State<Home> {
   var tagsList = [
     "Animal",
     "Artistic",
-    "Bike",
+    "Super Bike",
     "Car",
     "Color",
     "Event",
@@ -137,6 +137,9 @@ class _HomeState extends State<Home> {
                       (_latestWallpaper.length > 0)
                           ? latestWallpapers()
                           : Center(child: CircularProgressIndicator()),
+                      SizedBox(
+                        height: 20.0,
+                      ),
                       _titleBox("Quick Categories"),
                       SizedBox(
                         height: 20.0,
@@ -149,29 +152,31 @@ class _HomeState extends State<Home> {
                   ),
                 ],
               )
-            : 
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xff768591), Color(0xffffffff) ],
-              stops: [0.2, 0.7],
-
-            )
-          ),
-          child: Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Image.asset('assets/splash_icon.png'),
-                SizedBox(height: 10.0,),
-                SizedBox(height: 200.0,width: 200.0,child: Lottie.asset("assets/splash_loading.json"),)
-              ],
-            ),
-          ),
-        )
-    );
+            : Container(
+                decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [Color(0xff768591), Color(0xffffffff)],
+                  stops: [0.2, 0.7],
+                )),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Image.asset('assets/splash_icon.png'),
+                      SizedBox(
+                        height: 10.0,
+                      ),
+                      SizedBox(
+                        height: 200.0,
+                        width: 200.0,
+                        child: Lottie.asset("assets/splash_loading.json"),
+                      )
+                    ],
+                  ),
+                ),
+              ));
   }
 
   static Future<bool> _checkAndGetPermission() async {
@@ -558,7 +563,7 @@ class _HomeState extends State<Home> {
           margin: EdgeInsets.only(top: 60.0),
           child: Center(
             child: Text(
-              "Wallpa Pro",
+              "Wallpapro",
               style: TextStyle(
                 fontSize: 32.0,
                 fontFamily: 'ArchitectsDaughter',
@@ -583,7 +588,8 @@ class _HomeState extends State<Home> {
                     contentPadding: EdgeInsets.all(10.0),
                     border: InputBorder.none,
                     hintText: "Search By Keyword",
-                    hintStyle: TextStyle(color: Theme.of(context).primaryColor.withOpacity(0.6)),
+                    hintStyle: TextStyle(
+                        color: Theme.of(context).primaryColor.withOpacity(0.6)),
                   ),
                   textInputAction: TextInputAction.search,
                   style: TextStyle(
@@ -602,12 +608,9 @@ class _HomeState extends State<Home> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SearchWallpaper(
-                            searchQuery: w
-                          )
-                        ),
+                            builder: (context) =>
+                                SearchWallpaper(searchQuery: w)),
                       );
-
                     }
                   },
                 ),
@@ -633,10 +636,8 @@ class _HomeState extends State<Home> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SearchWallpaper(
-                            searchQuery: _qq
-                          )
-                        ),
+                            builder: (context) =>
+                                SearchWallpaper(searchQuery: _qq)),
                       );
                     }
                   },
@@ -664,9 +665,13 @@ class _HomeState extends State<Home> {
         Positioned(
           left: 10,
           child: PopupMenuButton<String>(
-            icon: Icon(Icons.menu,color: Colors.white,size: 32,),
-            onSelected: (c){
-              switch(c){
+            icon: Icon(
+              Icons.menu,
+              color: Colors.white,
+              size: 32,
+            ),
+            onSelected: (c) {
+              switch (c) {
                 case 'About':
                   launchLandingPage();
                   break;
@@ -676,7 +681,7 @@ class _HomeState extends State<Home> {
               }
             },
             itemBuilder: (BuildContext context) {
-              return {'About','Rate Us'}.map((String choice) {
+              return {'About', 'Rate Us'}.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
                   child: Text(choice),
@@ -698,9 +703,11 @@ class _HomeState extends State<Home> {
       throw 'Could not launch $url';
     }
   }
+
   // -- rate us
   launchRateUs() async {
-    const url = 'market://details?id=com.hellodearcode.wallpapro&showAllReviews=true';
+    const url =
+        'market://details?id=com.hellodearcode.wallpapro&showAllReviews=true';
     if (await canLaunch(url)) {
       await launch(url);
     } else {

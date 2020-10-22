@@ -40,6 +40,7 @@ dependencies:
   firebase_admob: ^0.9.3+4
   url_launcher: ^5.7.5
   share: ^0.6.5+3
+  shared_preferences: ^0.5.12+2
 
 dev_dependencies:
   flutter_test:

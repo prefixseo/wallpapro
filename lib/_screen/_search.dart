@@ -9,6 +9,7 @@ import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wallpaperplugin/wallpaperplugin.dart';
 import 'package:wallpapro/helper/AdsManager.dart';
 import 'package:wallpapro/helper/models.dart';
@@ -23,14 +24,25 @@ class SearchWallpaper extends StatefulWidget {
 }
 
 class _SearchWallpaperState extends State<SearchWallpaper> {
-
   // -- todo: ad init
-  static const MobileAdTargetingInfo _mobileAdTargetingInfo = MobileAdTargetingInfo(
-      testDevices: AdsManager.testDevice != null ? <String>[AdsManager.testDevice] : null,
-      nonPersonalizedAds: true,
-      keywords: <String>['earn','money','cashback','game','wallpaper','hd']
-  );
-
+  static const MobileAdTargetingInfo _mobileAdTargetingInfo =
+      MobileAdTargetingInfo(
+          testDevices:
+              AdsManager
+                          .testDevice !=
+                      null
+                  ? <String>[AdsManager.testDevice]
+                  : null,
+          nonPersonalizedAds: true,
+          keywords: <String>[
+            'earn wallpaper',
+            'money wallpaper',
+            'gaming wallpaper',
+            'wallpaper',
+            'hd',
+            'android wallpaper',
+            'hd wallpaper'
+      ]);
 
   List<Wallpaper> _searchWallpaper = new List<Wallpaper>();
 
@@ -43,28 +55,45 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
   void initState() {
     // TODO: implement initState
     super.initState();
+    _CheckOverlayTour();
     FirebaseAdMob.instance.initialize(appId: AdsManager.appId);
     _getSearchResults();
   }
 
+  _CheckOverlayTour() async {
+    SharedPreferences _session = await SharedPreferences.getInstance();
+    bool _isFirstTime = await _session.getBool("overlayTour");
+    if(_isFirstTime != null) {
+      setState(() {
+        overlayTour = _isFirstTime;
+      });
+    }
+  }
+
+  // -- -- CHeck New
+  _dissmissSetupTourFirstTime() async {
+    SharedPreferences _session = await SharedPreferences.getInstance();
+    await _session.setBool('overlayTour', false);
+    setState(() {
+      overlayTour = false;
+    });
+  }
 
   // -- todo interstitial ad
   InterstitialAd _interstitialAd;
-  InterstitialAd createFullAd(){
+  InterstitialAd createFullAd() {
     return InterstitialAd(
         adUnitId: AdsManager.InterstitialAdId,
         targetingInfo: _mobileAdTargetingInfo,
-        listener: (MobileAdEvent e){
+        listener: (MobileAdEvent e) {
           print("InterAdEve $e");
-        }
-    );
+        });
   }
-
 
   @override
   void dispose() {
     // TODO: implement dispose
-    if(_interstitialAd != null) {
+    if (_interstitialAd != null) {
       _interstitialAd.dispose();
     }
     super.dispose();
@@ -72,7 +101,8 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
 
   // -- Get search results from API
   _getSearchResults() async {
-    var _fetch = await http.get(UnsplashAPI().SearchPhotos(Uri.encodeQueryComponent(widget.searchQuery)));
+    var _fetch = await http.get(UnsplashAPI()
+        .SearchPhotos(Uri.encodeQueryComponent(widget.searchQuery)));
     if (_fetch.statusCode == 200) {
       var deData = json.decode(_fetch.body);
       setState(() {
@@ -85,7 +115,6 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -95,11 +124,13 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
           children: [
             Positioned(
               child: IconButton(
-                icon: Icon(Icons.arrow_back_sharp,color: Theme.of(context).primaryColor,),
-                onPressed: (){
-                  Navigator.of(context).pop();
-                }
-              ),
+                  icon: Icon(
+                    Icons.arrow_back_sharp,
+                    color: Theme.of(context).primaryColor,
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  }),
             ),
             Column(
               children: [
@@ -107,10 +138,12 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                   padding: const EdgeInsets.all(10.0),
                   child: Text(
                     (_searchWallpaper.length > 0)
-                        ?
-                    "( " + widget.searchQuery +" ) "+ _searchWallpaper.length.toString() + " results"
-                        :
-                    widget.searchQuery,
+                        ? "( " +
+                            widget.searchQuery +
+                            " ) " +
+                            _searchWallpaper.length.toString() +
+                            " results"
+                        : widget.searchQuery,
                     style: TextStyle(
                       fontFamily: 'ArchitectsDaughter',
                       fontStyle: FontStyle.italic,
@@ -121,137 +154,140 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                   ),
                 ),
                 Expanded(
-                  child: (_searchWallpaper.length > 0) ? Swiper(
-                    controller: _swiperController,
-                    itemBuilder: (BuildContext context, int index) {
-                      return InkWell(
-                        onTap: () => _showModalSheet(_searchWallpaper[index]),
-                        child: Stack(
-                          children: <Widget>[
-                            CachedNetworkImage(
-                              imageUrl: _searchWallpaper[index].smallUrl,
-                              fit: BoxFit.cover,
-                              height: MediaQuery.of(context).size.height,
-                              progressIndicatorBuilder:
-                                  (context, url, downloadProgress) => Center(
-                                  child: CircularProgressIndicator(
-                                      value: downloadProgress.progress)),
-                              errorWidget: (context, url, error) =>
-                                  Center(child: Icon(Icons.error)),
-                            ),
-                            Positioned(
-                              bottom: 60,
-                              left: 10,
-                              child: Container(
-                                padding: EdgeInsets.all(5.0),
-                                decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(10.0),
-                                  color: Theme.of(context).primaryColor.withOpacity(0.5),
-                                ),
-                                child: Text(
-                                  _searchWallpaper[index].attribution.length > 15
-                                      ? "By " +
-                                      _searchWallpaper[index]
-                                          .attribution
-                                          .substring(0, 15) +
-                                      "...."
-                                      : "By " + _searchWallpaper[index].attribution,
-                                  style: TextStyle(
-                                      fontFamily: "ArchitectsDaughter",
-                                      color: Colors.white
+                  child: (_searchWallpaper.length > 0)
+                      ? Swiper(
+                          controller: _swiperController,
+                          itemBuilder: (BuildContext context, int index) {
+                            return InkWell(
+                              onTap: () =>
+                                  _showModalSheet(_searchWallpaper[index]),
+                              child: Stack(
+                                children: <Widget>[
+                                  CachedNetworkImage(
+                                    imageUrl: _searchWallpaper[index].smallUrl,
+                                    fit: BoxFit.cover,
+                                    height: MediaQuery.of(context).size.height,
+                                    progressIndicatorBuilder: (context, url,
+                                            downloadProgress) =>
+                                        Center(
+                                            child: CircularProgressIndicator(
+                                                value:
+                                                    downloadProgress.progress)),
+                                    errorWidget: (context, url, error) =>
+                                        Center(child: Icon(Icons.error)),
                                   ),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              top: 30,
-                              right: 10,
-                              child: Container(
-                                  padding: EdgeInsets.all(5.0),
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10.0),
-                                    color: Theme.of(context).primaryColor.withOpacity(0.5),
-                                  ),
-                                  child: Text(
-                                    "♥ " + _searchWallpaper[index].likes,
-                                    style: TextStyle(
-                                        fontFamily: "ArchitectsDaughter",
-                                        color: Colors.white
+                                  Positioned(
+                                    bottom: 60,
+                                    left: 10,
+                                    child: Container(
+                                      padding: EdgeInsets.all(5.0),
+                                      decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(10.0),
+                                        color: Theme.of(context)
+                                            .primaryColor
+                                            .withOpacity(0.5),
+                                      ),
+                                      child: Text(
+                                        _searchWallpaper[index]
+                                                    .attribution
+                                                    .length >
+                                                15
+                                            ? "By " +
+                                                _searchWallpaper[index]
+                                                    .attribution
+                                                    .substring(0, 15) +
+                                                "...."
+                                            : "By " +
+                                                _searchWallpaper[index]
+                                                    .attribution,
+                                        style: TextStyle(
+                                            fontFamily: "ArchitectsDaughter",
+                                            color: Colors.white),
+                                      ),
                                     ),
-                                  )),
-                            ),
-                          ],
+                                  ),
+                                  Positioned(
+                                    top: 30,
+                                    right: 10,
+                                    child: Container(
+                                        padding: EdgeInsets.all(5.0),
+                                        decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(10.0),
+                                          color: Theme.of(context)
+                                              .primaryColor
+                                              .withOpacity(0.5),
+                                        ),
+                                        child: Text(
+                                          "♥ " + _searchWallpaper[index].likes,
+                                          style: TextStyle(
+                                              fontFamily: "ArchitectsDaughter",
+                                              color: Colors.white),
+                                        )),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                          itemCount: _searchWallpaper.length,
+                          viewportFraction: 1,
+                          scale: 1,
+                        )
+                      : Center(
+                          child: CircularProgressIndicator(),
                         ),
-                      );
-                    },
-                    itemCount: _searchWallpaper.length,
-                    viewportFraction: 1,
-                    scale: 1,
-                  ) : Center(child: CircularProgressIndicator(),),
                 ),
               ],
             ),
-            (overlayTour) ? Container(
-              height: MediaQuery.of(context).size.height,
-              width: MediaQuery.of(context).size.width,
-              color: Colors.black.withAlpha(150),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    "Swipe Left & Right to\nExplore Search Results",
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontFamily: "ArchitectsDaughter",
-                      fontSize: 18.0
+            (overlayTour)
+                ? Container(
+                    height: MediaQuery.of(context).size.height,
+                    width: MediaQuery.of(context).size.width,
+                    color: Colors.black.withAlpha(150),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          "Swipe Left & Right to\nExplore Search Results",
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: "ArchitectsDaughter",
+                              fontSize: 18.0),
+                        ),
+                        SizedBox(
+                          height: 200.0,
+                          width: 200.0,
+                          child: Lottie.asset("assets/swipe.json"),
+                        ),
+                        RaisedButton(
+                            child: Text("Got it!"),
+                            color: Colors.white,
+                            onPressed: () => _dissmissSetupTourFirstTime())
+                      ],
                     ),
-                  ),
-                  SizedBox(
-                    height: 200.0,
-                    width: 200.0,
-                    child: Lottie.asset("assets/swipe.json"),
-                  ),
-                  RaisedButton(
-                    child: Text("Got it!"),
-                    color: Colors.white,
-                    onPressed: (){
-                      setState(() {
-                        overlayTour = false;
-                      });
-                    }
                   )
-                ],
-              ),
-            ) : Center(),
+                : Center(),
           ],
         ),
       ),
     );
   }
 
-
-
-
-
   // -- Bottom Modal
   void _showModalSheet(Wallpaper winfo) {
-    if (_swiperController.hasListeners) {
-      _swiperController.stopAutoplay();
-    }
     Future<void> future = showModalBottomSheet(
         backgroundColor: Colors.transparent,
         context: context,
         builder: (builder) {
           return StatefulBuilder(
-            builder: (BuildContext context, setState){
+            builder: (BuildContext context, setState) {
               return Wrap(
                 children: <Widget>[
                   Container(
-                    margin: EdgeInsets.only(
-                        left:30.0,right:30.0,
-                        bottom: 70.0
-                    ),
+                    margin:
+                        EdgeInsets.only(left: 30.0, right: 30.0, bottom: 70.0),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                           begin: Alignment.topLeft,
@@ -259,12 +295,11 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                           colors: [
                             Color(0xffdcdddd),
                             Color(0xffefeeee),
-                          ]
-                      ),
+                          ]),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.white.withOpacity(0.5),
-                          offset: Offset(0,0),
+                          offset: Offset(0, 0),
                           blurRadius: 10.0,
                         )
                       ],
@@ -291,38 +326,42 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                         SizedBox(
                           height: 20.0,
                         ),
-                        (!isDownloading) ?
-                        SizedBox(
-                          width: 200.0,
-                          child: MaterialButton(
-                            onPressed: () {
-                              setState(() {
-                                isDownloading = true;
-                              });
-                              _downloadAndApply(winfo.regularUrl);
-                            },
-                            color: Theme.of(context).primaryColor,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: <Widget>[
-                                Icon(Icons.file_download,color: Colors.white,),
-                                SizedBox(width: 10.0,),
-                                Text(
-                                  "Download & Apply",
-                                  style: TextStyle(
-                                      fontFamily: "ArchitectsDaughter",
-                                      color: Colors.white
+                        (!isDownloading)
+                            ? SizedBox(
+                                width: 200.0,
+                                child: MaterialButton(
+                                  onPressed: () {
+                                    setState(() {
+                                      isDownloading = true;
+                                    });
+                                    _downloadAndApply(winfo.regularUrl);
+                                  },
+                                  color: Theme.of(context).primaryColor,
+                                  child: Row(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: <Widget>[
+                                      Icon(
+                                        Icons.file_download,
+                                        color: Colors.white,
+                                      ),
+                                      SizedBox(
+                                        width: 10.0,
+                                      ),
+                                      Text(
+                                        "Download & Apply",
+                                        style: TextStyle(
+                                            fontFamily: "ArchitectsDaughter",
+                                            color: Colors.white),
+                                      )
+                                    ],
                                   ),
-                                )
-                              ],
-                            ),
-                          ),
-                        ) :
-                        Container(
-                          height: 200,
-                          width: 200,
-                          child: Lottie.asset("assets/download.json"),
-                        )
+                                ),
+                              )
+                            : Container(
+                                height: 200,
+                                width: 200,
+                                child: Lottie.asset("assets/download.json"),
+                              )
                       ],
                     ),
                     padding: EdgeInsets.all(20.0),
@@ -332,35 +371,32 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
             },
           );
         });
-    future.then((void value) => _closeModal(value));
   }
-
-
 
   static Future<bool> _checkAndGetPermission() async {
     final PermissionStatus permissionStatus = await PermissionHandler()
         .checkPermissionStatus(PermissionGroup.storage);
-    if(permissionStatus != PermissionStatus.granted){
+    if (permissionStatus != PermissionStatus.granted) {
       final Map<PermissionGroup, PermissionStatus> _permission =
-      await PermissionHandler()
-          .requestPermissions(<PermissionGroup>[PermissionGroup.storage]);
-      if(_permission[PermissionGroup.storage] != PermissionStatus.granted){
+          await PermissionHandler()
+              .requestPermissions(<PermissionGroup>[PermissionGroup.storage]);
+      if (_permission[PermissionGroup.storage] != PermissionStatus.granted) {
         return null;
       }
     }
     return true;
   }
 
-
-  _downloadAndApply(dl_url) async{
+  _downloadAndApply(dl_url) async {
     // -- todo: Iamge set as wallpaper
-    if(_checkAndGetPermission != null){
+    if (_checkAndGetPermission != null) {
       Dio _dio = new Dio();
       final Directory _dir = await getExternalStorageDirectory();
-      final Directory _walpaDir = await Directory(_dir.path + '/walpadl').create(recursive: true);
+      final Directory _walpaDir =
+          await Directory(_dir.path + '/walpadl').create(recursive: true);
       final String imagePath = _walpaDir.path + '/_walpapro.jpeg';
 
-      try{
+      try {
         await _dio.download(dl_url, imagePath);
         setState(() {
           _localPathDl = imagePath;
@@ -372,18 +408,12 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
         });
         Navigator.pop(context);
         // todo pop big ad
-        _interstitialAd = await createFullAd()..load()..show();
-
-      } on PlatformException catch(e){
+        _interstitialAd = await createFullAd()
+          ..load()
+          ..show();
+      } on PlatformException catch (e) {
         print(e);
       }
-
-    }
-  }
-
-  void _closeModal(void value) {
-    if (_swiperController.hasListeners) {
-      _swiperController.startAutoplay();
     }
   }
 }
