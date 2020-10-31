@@ -6,6 +6,7 @@ import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -144,8 +145,7 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                             _searchWallpaper.length.toString() +
                             " results"
                         : widget.searchQuery,
-                    style: TextStyle(
-                      fontFamily: 'ArchitectsDaughter',
+                    style: GoogleFonts.lato(
                       fontStyle: FontStyle.italic,
                       fontSize: 18.0,
                       color: Theme.of(context).primaryColor,
@@ -201,8 +201,7 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                                             : "By " +
                                                 _searchWallpaper[index]
                                                     .attribution,
-                                        style: TextStyle(
-                                            fontFamily: "ArchitectsDaughter",
+                                        style: GoogleFonts.lato(
                                             color: Colors.white),
                                       ),
                                     ),
@@ -221,8 +220,7 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                                         ),
                                         child: Text(
                                           "♥ " + _searchWallpaper[index].likes,
-                                          style: TextStyle(
-                                              fontFamily: "ArchitectsDaughter",
+                                          style: GoogleFonts.lato(
                                               color: Colors.white),
                                         )),
                                   ),
@@ -251,9 +249,8 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                         Text(
                           "Swipe Left & Right to\nExplore Search Results",
                           textAlign: TextAlign.center,
-                          style: TextStyle(
+                          style: GoogleFonts.lato(
                               color: Colors.white,
-                              fontFamily: "ArchitectsDaughter",
                               fontSize: 18.0),
                         ),
                         SizedBox(
@@ -262,7 +259,7 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                           child: Lottie.asset("assets/swipe.json"),
                         ),
                         RaisedButton(
-                            child: Text("Got it!"),
+                            child: Text("Got it!",style: GoogleFonts.lato(),),
                             color: Colors.white,
                             onPressed: () => _dissmissSetupTourFirstTime())
                       ],
@@ -311,52 +308,82 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                       children: <Widget>[
                         Text(
                           winfo.description != null ? winfo.description : '',
-                          style: TextStyle(
-                            fontFamily: "ArchitectsDaughter",
-                          ),
+                          style: GoogleFonts.lato()
                         ),
                         Text(
-                          "Uploaded By: " + winfo.attribution + " with ♥ Love",
+                          "Published By " + winfo.attribution + " with ♥ Unsplash \n\nDownload & Apply",
                           textAlign: TextAlign.left,
                           textDirection: TextDirection.ltr,
-                          style: TextStyle(
-                            fontFamily: "ArchitectsDaughter",
-                          ),
+                          style: GoogleFonts.lato()
                         ),
                         SizedBox(
-                          height: 20.0,
+                          height: 10.0,
                         ),
                         (!isDownloading)
-                            ? SizedBox(
-                                width: 200.0,
-                                child: MaterialButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      isDownloading = true;
-                                    });
-                                    _downloadAndApply(winfo.regularUrl);
-                                  },
-                                  color: Theme.of(context).primaryColor,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(
-                                        Icons.file_download,
-                                        color: Colors.white,
+                            ? Column(
+                              children: [
+                                SizedBox(
+                                    width: 200.0,
+                                    child: MaterialButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          isDownloading = true;
+                                        });
+                                        _downloadAndApply(winfo.regularUrl);
+                                      },
+                                      color: Theme.of(context).primaryColor,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.file_download,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(
+                                            width: 10.0,
+                                          ),
+                                          Text(
+                                            "Regular HD",
+                                            style: GoogleFonts.lato(
+                                                color: Colors.white
+                                            ),
+                                          )
+                                        ],
                                       ),
-                                      SizedBox(
-                                        width: 10.0,
-                                      ),
-                                      Text(
-                                        "Download & Apply",
-                                        style: TextStyle(
-                                            fontFamily: "ArchitectsDaughter",
-                                            color: Colors.white),
-                                      )
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              )
+                                SizedBox(
+                                    width: 200.0,
+                                    child: MaterialButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          isDownloading = true;
+                                        });
+                                        _downloadAndApply(winfo.highUrl);
+                                      },
+                                      color: Theme.of(context).primaryColor,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.file_download,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(
+                                            width: 10.0,
+                                          ),
+                                          Text(
+                                            "4k High Quality",
+                                            style: GoogleFonts.lato(
+                                                color: Colors.white
+                                            ),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                              ],
+                            )
                             : Container(
                                 height: 200,
                                 width: 200,

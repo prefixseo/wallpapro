@@ -6,8 +6,10 @@ import 'package:dio/dio.dart';
 import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
 import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
@@ -15,6 +17,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wallpaperplugin/wallpaperplugin.dart';
+import 'package:wallpapro/_screen/_about.dart';
 import 'package:wallpapro/_screen/_search.dart';
 import 'package:wallpapro/customHeaderCLipper.dart';
 import 'package:wallpapro/helper/AdsManager.dart';
@@ -78,22 +81,15 @@ class _HomeState extends State<Home> {
   var tagsList = [
     "Animal",
     "Artistic",
-    "Super Bike",
-    "Car",
-    "Color",
-    "Event",
     "Fruit",
     "Food",
     "Flower",
-    "Feeling",
     "Gaming",
     "Gradients",
-    "Inspirational",
     "Nature",
     "Office",
     "People",
     "Photography",
-    "Religion",
     "Sports",
     "Travel"
   ];
@@ -123,35 +119,55 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+        resizeToAvoidBottomPadding: false,
         backgroundColor: Color(0xFFefeeee),
         body: (_latestWallpaper.length > 0)
-            ? Column(
-                children: [
-                  Expanded(
-                    child: ListView(children: <Widget>[
+            ? InkWell(
+              onTap: (){
+                FocusScopeNode currentFocus = FocusScope.of(context);
+                if (!currentFocus.hasPrimaryFocus) {
+                  currentFocus.unfocus();
+                }
+              },
+              child: SafeArea(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
                       _topHeaderSearchBox(),
+                      SizedBox(
+                        height: 15.0,
+                      ),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.local_fire_department,
+                            size: 32.0,
+                            color: Color(0x55ff5467),
+                          ),
+                          _titleBox("Popular Categories"),
+                        ],
+                      ),
+                      QuickSearch(),
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.trending_up,
+                            size: 32.0,
+                            color: Color(0x55ff5467),
+                          ),
+                          _titleBox("Trending Wallpapers"),
+                        ],
+                      ),
+                      (_latestWallpaper.length > 0)
+                          ? Expanded(child: latestWallpapers())
+                          : Center(child: CircularProgressIndicator()),
                       SizedBox(
                         height: 40.0,
                       ),
-                      _titleBox("Latest Wallpapers"),
-                      (_latestWallpaper.length > 0)
-                          ? latestWallpapers()
-                          : Center(child: CircularProgressIndicator()),
-                      SizedBox(
-                        height: 20.0,
-                      ),
-                      _titleBox("Quick Categories"),
-                      SizedBox(
-                        height: 20.0,
-                      ),
-                      QuickSearch(),
-                      SizedBox(
-                        height: 50.0,
-                      ),
-                    ]),
+                    ],
                   ),
-                ],
-              )
+                ),
+            )
             : Container(
                 decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -275,51 +291,83 @@ class _HomeState extends State<Home> {
                       children: <Widget>[
                         Text(
                           winfo.description != null ? winfo.description : '',
-                          style: TextStyle(
-                            fontFamily: "ArchitectsDaughter",
-                          ),
+                          style: GoogleFonts.lato(),
                         ),
                         Text(
-                          "Uploaded By: " + winfo.attribution + " with ♥ Love",
+                          "Published By " +
+                              winfo.attribution +
+                              " with ♥ Unsplash \n\nDownload & Apply",
                           textAlign: TextAlign.left,
                           textDirection: TextDirection.ltr,
-                          style: TextStyle(
-                            fontFamily: "ArchitectsDaughter",
-                          ),
+                          style: GoogleFonts.lato(),
                         ),
                         SizedBox(
                           height: 20.0,
                         ),
                         (!isDownloading)
-                            ? SizedBox(
-                                width: 200.0,
-                                child: MaterialButton(
-                                  onPressed: () {
-                                    setState(() {
-                                      isDownloading = true;
-                                    });
-                                    _downloadAndApply(winfo.regularUrl);
-                                  },
-                                  color: Theme.of(context).primaryColor,
-                                  child: Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: <Widget>[
-                                      Icon(
-                                        Icons.file_download,
-                                        color: Colors.white,
+                            ? Column(
+                                children: [
+                                  SizedBox(
+                                    width: 200.0,
+                                    child: MaterialButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          isDownloading = true;
+                                        });
+                                        _downloadAndApply(winfo.regularUrl);
+                                      },
+                                      color: Theme.of(context).primaryColor,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.file_download,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(
+                                            width: 10.0,
+                                          ),
+                                          Text(
+                                            "Regular HD",
+                                            style: GoogleFonts.lato(
+                                                color: Colors.white),
+                                          )
+                                        ],
                                       ),
-                                      SizedBox(
-                                        width: 10.0,
-                                      ),
-                                      Text(
-                                        "Download & Apply",
-                                        style: TextStyle(
-                                            fontFamily: "ArchitectsDaughter",
-                                            color: Colors.white),
-                                      )
-                                    ],
+                                    ),
                                   ),
-                                ),
+                                  SizedBox(
+                                    width: 200.0,
+                                    child: MaterialButton(
+                                      onPressed: () {
+                                        setState(() {
+                                          isDownloading = true;
+                                        });
+                                        _downloadAndApply(winfo.highUrl);
+                                      },
+                                      color: Theme.of(context).primaryColor,
+                                      child: Row(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: <Widget>[
+                                          Icon(
+                                            Icons.file_download,
+                                            color: Colors.white,
+                                          ),
+                                          SizedBox(
+                                            width: 10.0,
+                                          ),
+                                          Text(
+                                            "4k High Quality",
+                                            style: GoogleFonts.lato(
+                                                color: Colors.white),
+                                          )
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               )
                             : Container(
                                 height: 200,
@@ -346,14 +394,13 @@ class _HomeState extends State<Home> {
 
   Widget _titleBox(_title) {
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: 25.0),
+      margin: EdgeInsets.symmetric(horizontal: 15.0),
       child: Text(
         _title,
-        style: TextStyle(
-            fontFamily: 'ArchitectsDaughter',
+        style: GoogleFonts.lato(
             fontWeight: FontWeight.bold,
             color: Theme.of(context).primaryColor,
-            fontSize: 24.0),
+            fontSize: 20.0),
       ),
     );
   }
@@ -361,7 +408,6 @@ class _HomeState extends State<Home> {
   // -- latest
   Widget latestWallpapers() {
     return Container(
-      height: 380,
       margin: EdgeInsets.symmetric(vertical: 10.0),
       child: Swiper(
         controller: _swiperController,
@@ -371,15 +417,16 @@ class _HomeState extends State<Home> {
             child: Stack(
               children: <Widget>[
                 Container(
-                  padding: EdgeInsets.all(1.0),
-                  margin: EdgeInsets.symmetric(vertical: 15.0),
+                  width: 220.0,
+                  height: 300.0,
+                  margin: EdgeInsets.symmetric(vertical: 10.0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withOpacity(0.4),
                         offset: Offset(3.0, 3.0),
-                        blurRadius: 10.0,
+                        blurRadius: 5.0,
                       ),
                     ],
                   ),
@@ -387,37 +434,15 @@ class _HomeState extends State<Home> {
                     borderRadius: BorderRadius.circular(10.0),
                     child: CachedNetworkImage(
                       imageUrl: _latestWallpaper[index].smallUrl,
-                      fit: BoxFit.fill,
-                      height: 380,
+                      fit: BoxFit.cover,
+                      width: 220.0,
+                      height: 300,
                       progressIndicatorBuilder:
                           (context, url, downloadProgress) => Center(
                               child: CircularProgressIndicator(
                                   value: downloadProgress.progress)),
                       errorWidget: (context, url, error) =>
                           Center(child: Icon(Icons.error)),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  bottom: 30,
-                  left: 10,
-                  child: Container(
-                    padding: EdgeInsets.all(5.0),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10.0),
-                      color: Theme.of(context).primaryColor.withOpacity(0.5),
-                    ),
-                    child: Text(
-                      _latestWallpaper[index].attribution.length > 15
-                          ? "By " +
-                              _latestWallpaper[index]
-                                  .attribution
-                                  .substring(0, 15) +
-                              "...."
-                          : "By " + _latestWallpaper[index].attribution,
-                      style: TextStyle(
-                          fontFamily: "ArchitectsDaughter",
-                          color: Colors.white),
                     ),
                   ),
                 ),
@@ -432,10 +457,9 @@ class _HomeState extends State<Home> {
                       ),
                       child: Text(
                         "♥ " + _latestWallpaper[index].likes,
-                        style: TextStyle(
-                            fontFamily: "ArchitectsDaughter",
-                            color: Colors.white),
-                      )),
+                        style: GoogleFonts.lato(color: Colors.white),
+                      )
+                  ),
                 ),
               ],
             ),
@@ -443,82 +467,80 @@ class _HomeState extends State<Home> {
         },
         itemCount: _latestWallpaper.length,
         autoplay: true,
-        viewportFraction: 0.7,
-        scale: 0.7,
+        viewportFraction: 0.4,
+        scale: 0.5,
       ),
     );
   }
 
   // -- Quick Search
   Widget QuickSearch() {
-    return ListView.builder(
-      shrinkWrap: true,
-      itemCount: tagsList.isNotEmpty ? tagsList.length : 0,
-      physics: BouncingScrollPhysics(),
-      itemBuilder: (BuildContext context, int index) {
-        return InkWell(
-          onTap: () {
-            Navigator.push(
-              context,
-              MaterialPageRoute(
-                  builder: (context) =>
-                      SearchWallpaper(searchQuery: tagsList[index])),
-            );
-          },
-          child: Stack(
-            alignment: Alignment.center,
-            children: <Widget>[
-              Container(
-                height: 160.0,
-                padding: EdgeInsets.symmetric(horizontal: 15.0, vertical: 15.0),
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(15.0),
-                  child: CachedNetworkImage(
-                    imageUrl: "https://source.unsplash.com/400x150/?" +
-                        tagsList[index].toString(),
-                    fit: BoxFit.fill,
-                    height: MediaQuery.of(context).size.width,
-                    progressIndicatorBuilder:
-                        (context, url, downloadProgress) => Center(
-                            child: CircularProgressIndicator(
-                                value: downloadProgress.progress)),
-                    errorWidget: (context, url, error) =>
-                        Center(child: Icon(Icons.error)),
-                  ),
-                ),
-              ),
-              Positioned(
-                child: Container(
-                  height: 130.0,
+    return Container(
+      height: 110.0,
+      child: ListView.builder(
+        shrinkWrap: true,
+        itemCount: tagsList.isNotEmpty ? tagsList.length : 0,
+        physics: BouncingScrollPhysics(),
+        scrollDirection: Axis.horizontal,
+        itemBuilder: (BuildContext context, int index) {
+          return InkWell(
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                    builder: (context) =>
+                        SearchWallpaper(searchQuery: tagsList[index])),
+              );
+            },
+            child: Stack(
+              alignment: Alignment.center,
+              children: <Widget>[
+                Container(
+                  height: 70.0,
+                  width: 220.0,
                   margin: EdgeInsets.all(15.0),
-                  decoration: BoxDecoration(
+                  child: ClipRRect(
                     borderRadius: BorderRadius.circular(15.0),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Theme.of(context).primaryColor.withOpacity(0.5),
-                        spreadRadius: 2,
-                        blurRadius: 5,
-                        offset: Offset(0, 0), // changes position of shadow
-                      ),
-                    ],
+                    child: CachedNetworkImage(
+                      imageUrl: "https://source.unsplash.com/220x70/?" +
+                          tagsList[index].toString(),
+                      fit: BoxFit.fill,
+                      height: MediaQuery.of(context).size.width,
+                      progressIndicatorBuilder:
+                          (context, url, downloadProgress) => Center(
+                              child: CircularProgressIndicator(
+                                  value: downloadProgress.progress)),
+                      errorWidget: (context, url, error) =>
+                          Center(child: Icon(Icons.error)),
+                    ),
                   ),
-                  child: Center(),
                 ),
-              ),
-              Text(
-                tagsList[index].toString().toUpperCase(),
-                style: TextStyle(
-                  fontSize: 24.0,
-                  fontFamily: 'ArchitectsDaughter',
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                  decoration: TextDecoration.none,
+                Positioned(
+                  child: Container(
+                    height: 70.0,
+                    width: 220.0,
+                    margin: EdgeInsets.all(15.0),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15.0),
+                      color: Theme.of(context).primaryColor.withAlpha(130),
+                    ),
+                    child: Center(),
+                  ),
                 ),
-              )
-            ],
-          ),
-        );
-      },
+                Text(
+                  tagsList[index].toString().toUpperCase(),
+                  style: GoogleFonts.lato(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                    decoration: TextDecoration.none,
+                  ),
+                )
+              ],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -529,7 +551,7 @@ class _HomeState extends State<Home> {
           clipper: CustomHeaderClipper(),
           child: Container(
             child: CachedNetworkImage(
-              imageUrl: "https://source.unsplash.com/400x250/?nature",
+              imageUrl: "https://source.unsplash.com/400x130/?nature",
               fit: BoxFit.fill,
               progressIndicatorBuilder: (context, url, downloadProgress) =>
                   Center(
@@ -544,38 +566,29 @@ class _HomeState extends State<Home> {
           child: ClipPath(
             clipper: CustomHeaderClipper(),
             child: Container(
-              height: 225.0,
-              decoration: BoxDecoration(
-                boxShadow: [
-                  BoxShadow(
-                    color: Theme.of(context).primaryColor.withOpacity(0.5),
-                    spreadRadius: 0,
-                    blurRadius: 0,
-                    offset: Offset(0, 0), // changes position of shadow
-                  ),
-                ],
-              ),
+              height: 117.0,
+              color: Theme.of(context).primaryColor.withAlpha(130),
               child: Center(),
             ),
           ),
         ),
         Container(
-          margin: EdgeInsets.only(top: 60.0),
-          child: Center(
-            child: Text(
-              "Wallpapro",
-              style: TextStyle(
-                fontSize: 32.0,
-                fontFamily: 'ArchitectsDaughter',
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
+          margin: EdgeInsets.only(top: 5.0),
+          child: InkWell(
+            onTap: () => launchLandingPage(),
+            child: Center(
+                child: Image.asset(
+              "assets/splash_icon.png",
+              width: 70.0,
+            )),
           ),
         ),
         Container(
-          color: Colors.white,
-          margin: EdgeInsets.only(top: 180.0, right: 20.0, left: 20.0),
+          margin: EdgeInsets.only(
+            top: 90.0,
+            right: 20.0,
+            left: 20.0,
+          ),
           child: Stack(
             children: [
               Material(
@@ -592,10 +605,9 @@ class _HomeState extends State<Home> {
                         color: Theme.of(context).primaryColor.withOpacity(0.6)),
                   ),
                   textInputAction: TextInputAction.search,
-                  style: TextStyle(
+                  style: GoogleFonts.lato(
                     color: Theme.of(context).primaryColor,
                     fontSize: 16.0,
-                    fontFamily: 'ArchitectsDaughter',
                   ),
                   onChanged: (query) {},
                   onSubmitted: (w) {
@@ -620,7 +632,7 @@ class _HomeState extends State<Home> {
                 child: IconButton(
                   icon: Icon(
                     Icons.search,
-                    color: Theme.of(context).primaryColor,
+                    color: Color(0xffff5467),
                   ),
                   onPressed: () {
                     String _qq = _searchBoxController.value.text;
@@ -648,15 +660,16 @@ class _HomeState extends State<Home> {
         ),
         Positioned(
           right: 10,
+          top: 20,
           child: IconButton(
             icon: Icon(
               Icons.share,
               color: Colors.white,
-              size: 32.0,
+              size: 28,
             ),
             onPressed: () {
               Share.share(
-                "Hey, I am Using WallpaPro best wallpaper One Tap Download and Apply Application\nYou can also Download and Get Free HD Wallpapers with One Tap \n https://play.google.com/store/apps/details?id=com.hellodearcode.wallpapro",
+                "Hey, I am Using WallpaPro\nYou can also Download and Get Free HD Wallpapers with One Tap \n https://play.google.com/store/apps/details?id=com.hellodearcode.wallpapro",
                 subject: "Wallpapro HD mobile backgrounds app",
               );
             },
@@ -664,16 +677,23 @@ class _HomeState extends State<Home> {
         ),
         Positioned(
           left: 10,
+          top: 20,
           child: PopupMenuButton<String>(
             icon: Icon(
               Icons.menu,
               color: Colors.white,
-              size: 32,
+              size: 28,
             ),
             onSelected: (c) {
               switch (c) {
                 case 'About':
-                  launchLandingPage();
+                  Navigator.push(
+                    context,
+                    CupertinoPageRoute(
+                        builder: (context) =>
+                            About()
+                    ),
+                  );
                   break;
                 case 'Rate Us':
                   launchRateUs();
@@ -684,7 +704,10 @@ class _HomeState extends State<Home> {
               return {'About', 'Rate Us'}.map((String choice) {
                 return PopupMenuItem<String>(
                   value: choice,
-                  child: Text(choice),
+                  child: Text(
+                    choice,
+                    style: GoogleFonts.lato(),
+                  ),
                 );
               }).toList();
             },
