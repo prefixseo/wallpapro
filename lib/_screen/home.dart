@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
-import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -20,7 +19,6 @@ import 'package:wallpaperplugin/wallpaperplugin.dart';
 import 'package:wallpapro/_screen/_about.dart';
 import 'package:wallpapro/_screen/_search.dart';
 import 'package:wallpapro/customHeaderCLipper.dart';
-import 'package:wallpapro/helper/AdsManager.dart';
 import 'package:wallpapro/helper/unsplashAPI.dart';
 import 'package:wallpapro/helper/models.dart';
 
@@ -30,53 +28,13 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  List<Wallpaper> _latestWallpaper = new List<Wallpaper>();
+  List<Wallpaper> _latestWallpaper = [];
   final GlobalKey _menuKey = new GlobalKey();
   SwiperController _swiperController = new SwiperController();
   var _searchBoxController = new TextEditingController();
 
   var _localPathDl = "";
   bool isDownloading = false;
-
-  // -- todo: ad init
-  static const MobileAdTargetingInfo _mobileAdTargetingInfo =
-      MobileAdTargetingInfo(
-          testDevices: AdsManager.testDevice != null
-              ? <String>[AdsManager.testDevice]
-              : null,
-          nonPersonalizedAds: true,
-          keywords: <String>[
-        'earn wallpaper',
-        'money wallpaper',
-        'gaming wallpaper',
-        'wallpaper',
-        'hd',
-        'android wallpaper',
-        'hd wallpaper'
-      ]);
-
-  // -- todo: banner ad
-  BannerAd _bannerAd;
-  BannerAd createBannerAd() {
-    return BannerAd(
-        adUnitId: AdsManager.bannerAdId,
-        size: AdSize.banner,
-        targetingInfo: _mobileAdTargetingInfo,
-        listener: (MobileAdEvent event) {
-          print("MobileAdEvent $event");
-        });
-  }
-
-  // -- todo interstitial ad
-  InterstitialAd _interstitialAd;
-  InterstitialAd createFullAd() {
-    return InterstitialAd(
-        adUnitId: AdsManager.InterstitialAdId,
-        targetingInfo: _mobileAdTargetingInfo,
-        listener: (MobileAdEvent e) {
-          print("InterAdEve $e");
-        });
-  }
 
   var tagsList = [
     "Animal",
@@ -96,30 +54,19 @@ class _HomeState extends State<Home> {
 
   @override
   void initState() {
-    FirebaseAdMob.instance.initialize(appId: AdsManager.appId);
-    _bannerAd = createBannerAd()
-      ..load()
-      ..show();
     _getFeatured();
     super.initState();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    if (_bannerAd != null) {
-      _bannerAd.dispose();
-    }
-    if (_interstitialAd != null) {
-      _interstitialAd.dispose();
-    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        resizeToAvoidBottomPadding: false,
+        resizeToAvoidBottomInset: false,
         backgroundColor: Color(0xFFefeeee),
         body: (_latestWallpaper.length > 0)
             ? InkWell(
@@ -242,10 +189,6 @@ class _HomeState extends State<Home> {
         setState(() {
           isDownloading = false;
         });
-        Navigator.pop(context);
-        _interstitialAd = await createFullAd()
-          ..load()
-          ..show();
       } on PlatformException catch (e) {
         print(e);
       }
@@ -551,7 +494,7 @@ class _HomeState extends State<Home> {
           clipper: CustomHeaderClipper(),
           child: Container(
             child: CachedNetworkImage(
-              imageUrl: "https://source.unsplash.com/400x130/?nature",
+              imageUrl: "https://source.unsplash.com/400x130/?tree,garden,scene",
               fit: BoxFit.fill,
               progressIndicatorBuilder: (context, url, downloadProgress) =>
                   Center(
@@ -719,7 +662,7 @@ class _HomeState extends State<Home> {
 
   // -- landing page
   launchLandingPage() async {
-    const url = 'https://wallpapro.hellodearcode.com';
+    const url = 'https://www.prefixseo.com';
     if (await canLaunch(url)) {
       await launch(url);
     } else {

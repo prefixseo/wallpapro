@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 class About extends StatelessWidget {
   // -- landing page
   launchLandingPage() async {
-    const url = 'https://wallpapro.hellodearcode.com';
+    const url = 'https://www.prefixseo.com';
     if (await canLaunch(url)) {
       await launch(url);
     } else {

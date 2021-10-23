@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
-import 'package:firebase_admob/firebase_admob.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
@@ -12,7 +11,6 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wallpaperplugin/wallpaperplugin.dart';
-import 'package:wallpapro/helper/AdsManager.dart';
 import 'package:wallpapro/helper/models.dart';
 import 'package:wallpapro/helper/unsplashAPI.dart';
 import 'package:http/http.dart' as http;
@@ -25,27 +23,8 @@ class SearchWallpaper extends StatefulWidget {
 }
 
 class _SearchWallpaperState extends State<SearchWallpaper> {
-  // -- todo: ad init
-  static const MobileAdTargetingInfo _mobileAdTargetingInfo =
-      MobileAdTargetingInfo(
-          testDevices:
-              AdsManager
-                          .testDevice !=
-                      null
-                  ? <String>[AdsManager.testDevice]
-                  : null,
-          nonPersonalizedAds: true,
-          keywords: <String>[
-            'earn wallpaper',
-            'money wallpaper',
-            'gaming wallpaper',
-            'wallpaper',
-            'hd',
-            'android wallpaper',
-            'hd wallpaper'
-      ]);
-
-  List<Wallpaper> _searchWallpaper = new List<Wallpaper>();
+  
+  List<Wallpaper> _searchWallpaper = [];
 
   bool isDownloading = false;
   bool overlayTour = true;
@@ -57,7 +36,6 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
     // TODO: implement initState
     super.initState();
     _CheckOverlayTour();
-    FirebaseAdMob.instance.initialize(appId: AdsManager.appId);
     _getSearchResults();
   }
 
@@ -80,23 +58,9 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
     });
   }
 
-  // -- todo interstitial ad
-  InterstitialAd _interstitialAd;
-  InterstitialAd createFullAd() {
-    return InterstitialAd(
-        adUnitId: AdsManager.InterstitialAdId,
-        targetingInfo: _mobileAdTargetingInfo,
-        listener: (MobileAdEvent e) {
-          print("InterAdEve $e");
-        });
-  }
 
   @override
   void dispose() {
-    // TODO: implement dispose
-    if (_interstitialAd != null) {
-      _interstitialAd.dispose();
-    }
     super.dispose();
   }
 
@@ -434,10 +398,6 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
           isDownloading = false;
         });
         Navigator.pop(context);
-        // todo pop big ad
-        _interstitialAd = await createFullAd()
-          ..load()
-          ..show();
       } on PlatformException catch (e) {
         print(e);
       }
