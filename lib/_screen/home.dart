@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 import 'dart:ui';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
@@ -10,13 +11,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:http/http.dart' as http;
-import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:share/share.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:wallpaperplugin/wallpaperplugin.dart';
 import 'package:wallpapro/_screen/_about.dart';
+import 'package:wallpapro/_screen/_editor.dart';
 import 'package:wallpapro/_screen/_search.dart';
 import 'package:wallpapro/customHeaderCLipper.dart';
 import 'package:wallpapro/helper/unsplashAPI.dart';
@@ -51,6 +52,8 @@ class _HomeState extends State<Home> {
     "Sports",
     "Travel"
   ];
+  var _keyword = ["tree", "garden", "scene", "sunset", "people", "fireworks"];
+  var rng = new Random();
 
   @override
   void initState() {
@@ -70,13 +73,15 @@ class _HomeState extends State<Home> {
         backgroundColor: Color(0xFFefeeee),
         body: (_latestWallpaper.length > 0)
             ? InkWell(
-              onTap: (){
-                FocusScopeNode currentFocus = FocusScope.of(context);
-                if (!currentFocus.hasPrimaryFocus) {
-                  currentFocus.unfocus();
-                }
-              },
-              child: SafeArea(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                onTap: () {
+                  FocusScopeNode currentFocus = FocusScope.of(context);
+                  if (!currentFocus.hasPrimaryFocus) {
+                    currentFocus.unfocus();
+                  }
+                },
+                child: SafeArea(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -114,7 +119,7 @@ class _HomeState extends State<Home> {
                     ],
                   ),
                 ),
-            )
+              )
             : Container(
                 decoration: BoxDecoration(
                     gradient: LinearGradient(
@@ -129,12 +134,15 @@ class _HomeState extends State<Home> {
                     children: [
                       Image.asset('assets/splash_icon.png'),
                       SizedBox(
-                        height: 10.0,
+                        height: 30.0,
                       ),
                       SizedBox(
-                        height: 200.0,
-                        width: 200.0,
-                        child: Lottie.asset("assets/splash_loading.json"),
+                        height: 60.0,
+                        width: 60.0,
+                        child: CircularProgressIndicator(
+                          color: Color(0xffFFE162),
+                          backgroundColor: Color(0xffff5467),
+                        ),
                       )
                     ],
                   ),
@@ -170,7 +178,7 @@ class _HomeState extends State<Home> {
     }
   }
 
-  _downloadAndApply(dl_url) async {
+  _downloadAndApply(dl_url , isEditor) async {
     // -- todo: Iamge set as wallpaper
     if (_checkAndGetPermission != null) {
       Dio _dio = new Dio();
@@ -181,14 +189,27 @@ class _HomeState extends State<Home> {
 
       try {
         await _dio.download(dl_url, imagePath);
-        setState(() {
-          _localPathDl = imagePath;
-        });
 
-        await Wallpaperplugin.setAutoWallpaper(localFile: _localPathDl);
-        setState(() {
-          isDownloading = false;
-        });
+        if(!isEditor){
+          await Wallpaperplugin.setAutoWallpaper(localFile: imagePath);
+
+          setState(() {
+            isDownloading = false;
+          });
+          Navigator.pop(context);
+        }else{
+          setState(() {
+            isDownloading = false;
+          });
+          // -- Move to Editor
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => Editor(
+                        fileImage: File(imagePath),
+                      )));
+        }
+
       } on PlatformException catch (e) {
         print(e);
       }
@@ -200,130 +221,130 @@ class _HomeState extends State<Home> {
     if (_swiperController.hasListeners) {
       _swiperController.stopAutoplay();
     }
-    Future<void> future = showModalBottomSheet(
-        backgroundColor: Colors.transparent,
+    Future<void> future = showDialog(
         context: context,
-        builder: (builder) {
-          return StatefulBuilder(
-            builder: (BuildContext context, setState) {
-              return Wrap(
-                children: <Widget>[
-                  Container(
-                    margin:
-                        EdgeInsets.only(left: 30.0, right: 30.0, bottom: 70.0),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xffdcdddd),
-                            Color(0xffefeeee),
-                          ]),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.5),
-                          offset: Offset(0, 0),
-                          blurRadius: 10.0,
-                        )
-                      ],
-                      color: Color(0xFFEFEEEE),
-                      borderRadius: BorderRadius.circular(12.0),
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: StatefulBuilder(
+              builder: (BuildContext context, setState) {
+                return Wrap(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      child: (!isDownloading)
+                              ? Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: <Widget>[
+                          Text(
+                            "Apply Wallpaper",
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.lato(
+                                fontSize: 22.0, color: Color(0xffFF6363)),
+                          ),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              TextButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      isDownloading = true;
+                                    });
+                                    _downloadAndApply(winfo.regularUrl,false);
+                                  },
+                                  icon: Icon(Icons.download,
+                                      color: Color(0xffFFAB76)),
+                                  label: Text(
+                                    'HD',
+                                    style: GoogleFonts.lato(
+                                        color: Color(0xffFFAB76)),
+                                  )),
+                              TextButton.icon(
+                                  onPressed: () {
+                                    setState(() {
+                                      isDownloading = true;
+                                    });
+                                    _downloadAndApply(winfo.highUrl,false);
+                                  },
+                                  icon: Icon(Icons.download,
+                                      color: Color(0xffFF6363)),
+                                  label: Text(
+                                    "4K",
+                                    style: GoogleFonts.lato(
+                                        color: Color(0xffFF6363)),
+                                  )),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 10.0,
+                          ),
+                          Text(
+                            "Edit & Share",
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.lato(
+                                fontSize: 22.0, color: Color(0xffFFAB76)),
+                          ),
+                          TextButton.icon(
+                              onPressed: () {
+                                setState(() {
+                                  isDownloading = true;
+                                });
+                                _downloadAndApply(winfo.regularUrl,true);
+                              },
+                              icon: Icon(Icons.edit),
+                              label: Text("Open Editor")),
+                          SizedBox(
+                            height: 10.0,
+                          ),
+                          Divider(
+                            color: Colors.black,
+                          ),
+                          (winfo.description != null)
+                              ? Text(
+                                  winfo.description,
+                                  style: GoogleFonts.lato(),
+                                )
+                              : Center(),
+                          Text(
+                            "Published By " +
+                                winfo.attribution +
+                                " with ♥ Unsplash",
+                            textAlign: TextAlign.left,
+                            style: GoogleFonts.lato(),
+                          ),
+                          TextButton.icon(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              icon: Icon(
+                                Icons.close,
+                                color: Colors.red,
+                              ),
+                              label: Text(
+                                "Cancel",
+                                style:
+                                    GoogleFonts.lato(color: Color(0xffFF6363)),
+                              )),
+                        ],
+                      )
+                      : 
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "Downloading....",
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.lato(
+                                fontSize: 22.0, color: Color(0xffFF6363)),
+                          ),
+                          CircularProgressIndicator()
+                        ],
+                      ),
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          winfo.description != null ? winfo.description : '',
-                          style: GoogleFonts.lato(),
-                        ),
-                        Text(
-                          "Published By " +
-                              winfo.attribution +
-                              " with ♥ Unsplash \n\nDownload & Apply",
-                          textAlign: TextAlign.left,
-                          textDirection: TextDirection.ltr,
-                          style: GoogleFonts.lato(),
-                        ),
-                        SizedBox(
-                          height: 20.0,
-                        ),
-                        (!isDownloading)
-                            ? Column(
-                                children: [
-                                  SizedBox(
-                                    width: 200.0,
-                                    child: MaterialButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          isDownloading = true;
-                                        });
-                                        _downloadAndApply(winfo.regularUrl);
-                                      },
-                                      color: Theme.of(context).primaryColor,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: <Widget>[
-                                          Icon(
-                                            Icons.file_download,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(
-                                            width: 10.0,
-                                          ),
-                                          Text(
-                                            "Regular HD",
-                                            style: GoogleFonts.lato(
-                                                color: Colors.white),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                  SizedBox(
-                                    width: 200.0,
-                                    child: MaterialButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          isDownloading = true;
-                                        });
-                                        _downloadAndApply(winfo.highUrl);
-                                      },
-                                      color: Theme.of(context).primaryColor,
-                                      child: Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: <Widget>[
-                                          Icon(
-                                            Icons.file_download,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(
-                                            width: 10.0,
-                                          ),
-                                          Text(
-                                            "4k High Quality",
-                                            style: GoogleFonts.lato(
-                                                color: Colors.white),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              )
-                            : Container(
-                                height: 200,
-                                width: 200,
-                                child: Lottie.asset("assets/download.json"),
-                              )
-                      ],
-                    ),
-                    padding: EdgeInsets.all(20.0),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           );
         });
     future.then((void value) => _closeModal(value));
@@ -360,8 +381,8 @@ class _HomeState extends State<Home> {
             child: Stack(
               children: <Widget>[
                 Container(
-                  width: 220.0,
-                  height: 300.0,
+                  width: 240.0,
+                  height: 320.0,
                   margin: EdgeInsets.symmetric(vertical: 10.0),
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10.0),
@@ -401,8 +422,7 @@ class _HomeState extends State<Home> {
                       child: Text(
                         "♥ " + _latestWallpaper[index].likes,
                         style: GoogleFonts.lato(color: Colors.white),
-                      )
-                  ),
+                      )),
                 ),
               ],
             ),
@@ -410,7 +430,7 @@ class _HomeState extends State<Home> {
         },
         itemCount: _latestWallpaper.length,
         autoplay: true,
-        viewportFraction: 0.4,
+        viewportFraction: 0.5,
         scale: 0.5,
       ),
     );
@@ -439,41 +459,40 @@ class _HomeState extends State<Home> {
               alignment: Alignment.center,
               children: <Widget>[
                 Container(
-                  height: 70.0,
-                  width: 220.0,
-                  margin: EdgeInsets.all(15.0),
+                  height: 100.0,
+                  width: 240.0,
+                  margin: EdgeInsets.all(10.0),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(15.0),
-                    child: CachedNetworkImage(
-                      imageUrl: "https://source.unsplash.com/220x70/?" +
-                          tagsList[index].toString(),
-                      fit: BoxFit.fill,
-                      height: MediaQuery.of(context).size.width,
-                      progressIndicatorBuilder:
-                          (context, url, downloadProgress) => Center(
-                              child: CircularProgressIndicator(
-                                  value: downloadProgress.progress)),
-                      errorWidget: (context, url, error) =>
-                          Center(child: Icon(Icons.error)),
-                    ),
-                  ),
-                ),
-                Positioned(
-                  child: Container(
-                    height: 70.0,
-                    width: 220.0,
-                    margin: EdgeInsets.all(15.0),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15.0),
-                      color: Theme.of(context).primaryColor.withAlpha(130),
-                    ),
-                    child: Center(),
-                  ),
+                      borderRadius: BorderRadius.circular(10.0),
+                      child: Image.network(
+                        "https://source.unsplash.com/220x70/?" +
+                            tagsList[index].toString(),
+                        fit: BoxFit.fill,
+                        loadingBuilder: (BuildContext context, Widget child,
+                            ImageChunkEvent loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return Center(
+                            child: CircularProgressIndicator(
+                              value: loadingProgress.expectedTotalBytes != null
+                                  ? loadingProgress.cumulativeBytesLoaded /
+                                      loadingProgress.expectedTotalBytes
+                                  : null,
+                            ),
+                          );
+                        },
+                      )),
                 ),
                 Text(
                   tagsList[index].toString().toUpperCase(),
                   style: GoogleFonts.lato(
                     fontSize: 20.0,
+                    shadows: <Shadow>[
+                      Shadow(
+                        offset: Offset(1.0, 0),
+                        blurRadius: 10.0,
+                        color: Color(0xffff5467),
+                      ),
+                    ],
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                     decoration: TextDecoration.none,
@@ -494,7 +513,9 @@ class _HomeState extends State<Home> {
           clipper: CustomHeaderClipper(),
           child: Container(
             child: CachedNetworkImage(
-              imageUrl: "https://source.unsplash.com/400x130/?tree,garden,scene",
+              useOldImageOnUrlChange: false,
+              imageUrl: "https://source.unsplash.com/400x130/?" +
+                  _keyword[rng.nextInt(_keyword.length - 1)],
               fit: BoxFit.fill,
               progressIndicatorBuilder: (context, url, downloadProgress) =>
                   Center(
@@ -536,6 +557,7 @@ class _HomeState extends State<Home> {
             children: [
               Material(
                 elevation: 20.0,
+                borderRadius: BorderRadius.circular(10),
                 shadowColor: Theme.of(context).primaryColor,
                 child: TextField(
                   controller: _searchBoxController,
@@ -612,8 +634,8 @@ class _HomeState extends State<Home> {
             ),
             onPressed: () {
               Share.share(
-                "Hey, I am Using WallpaPro\nYou can also Download and Get Free HD Wallpapers with One Tap \n https://play.google.com/store/apps/details?id=com.hellodearcode.wallpapro",
-                subject: "Wallpapro HD mobile backgrounds app",
+                "Hey, I am Using HD Real Wallpapers App\nYou can also Download and Get Free HD Wallpapers with One Tap\n\nYou Can Also Edit them to make social Media Post For Whatsapp, Insta, Facebook, Twitter \n https://play.google.com/store/apps/details?id=com.hellodearcode.wallpapro",
+                subject: "HD Real Wallpapers",
               );
             },
           ),
@@ -632,10 +654,7 @@ class _HomeState extends State<Home> {
                 case 'About':
                   Navigator.push(
                     context,
-                    CupertinoPageRoute(
-                        builder: (context) =>
-                            About()
-                    ),
+                    CupertinoPageRoute(builder: (context) => About()),
                   );
                   break;
                 case 'Rate Us':

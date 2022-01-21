@@ -11,5 +11,4 @@ class UnsplashAPI{
   String SearchPhotos(q) {
     return _searchListPhotos + q + '&' + _apikey;
   }
-
 }

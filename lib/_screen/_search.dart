@@ -2,15 +2,16 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_swiper/flutter_swiper.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:lottie/lottie.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:wallpaperplugin/wallpaperplugin.dart';
+import 'package:wallpapro/_screen/_editor.dart';
 import 'package:wallpapro/helper/models.dart';
 import 'package:wallpapro/helper/unsplashAPI.dart';
 import 'package:http/http.dart' as http;
@@ -23,7 +24,6 @@ class SearchWallpaper extends StatefulWidget {
 }
 
 class _SearchWallpaperState extends State<SearchWallpaper> {
-  
   List<Wallpaper> _searchWallpaper = [];
 
   bool isDownloading = false;
@@ -42,7 +42,7 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
   _CheckOverlayTour() async {
     SharedPreferences _session = await SharedPreferences.getInstance();
     bool _isFirstTime = await _session.getBool("overlayTour");
-    if(_isFirstTime != null) {
+    if (_isFirstTime != null) {
       setState(() {
         overlayTour = _isFirstTime;
       });
@@ -57,7 +57,6 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
       overlayTour = false;
     });
   }
-
 
   @override
   void dispose() {
@@ -214,16 +213,21 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
                           "Swipe Left & Right to\nExplore Search Results",
                           textAlign: TextAlign.center,
                           style: GoogleFonts.lato(
-                              color: Colors.white,
-                              fontSize: 18.0),
+                              color: Colors.white, fontSize: 18.0),
                         ),
-                        SizedBox(
-                          height: 200.0,
-                          width: 200.0,
-                          child: Lottie.asset("assets/swipe.json"),
+                        Padding(
+                          padding: const EdgeInsets.all(10.0),
+                          child: Icon(
+                            Icons.swipe,
+                            size: 72,
+                            color: Colors.white,
+                          ),
                         ),
-                        RaisedButton(
-                            child: Text("Got it!",style: GoogleFonts.lato(),),
+                        CupertinoButton(
+                            child: Text(
+                              "Got it!",
+                              style: GoogleFonts.lato(color: Colors.black),
+                            ),
                             color: Colors.white,
                             onPressed: () => _dissmissSetupTourFirstTime())
                       ],
@@ -238,128 +242,130 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
 
   // -- Bottom Modal
   void _showModalSheet(Wallpaper winfo) {
-    Future<void> future = showModalBottomSheet(
-        backgroundColor: Colors.transparent,
+    showDialog(
         context: context,
-        builder: (builder) {
-          return StatefulBuilder(
-            builder: (BuildContext context, setState) {
-              return Wrap(
-                children: <Widget>[
-                  Container(
-                    margin:
-                        EdgeInsets.only(left: 30.0, right: 30.0, bottom: 70.0),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: [
-                            Color(0xffdcdddd),
-                            Color(0xffefeeee),
-                          ]),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.white.withOpacity(0.5),
-                          offset: Offset(0, 0),
-                          blurRadius: 10.0,
-                        )
-                      ],
-                      color: Color(0xFFEFEEEE),
-                      borderRadius: BorderRadius.circular(12.0),
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      children: <Widget>[
-                        Text(
-                          winfo.description != null ? winfo.description : '',
-                          style: GoogleFonts.lato()
-                        ),
-                        Text(
-                          "Published By " + winfo.attribution + " with ♥ Unsplash \n\nDownload & Apply",
-                          textAlign: TextAlign.left,
-                          textDirection: TextDirection.ltr,
-                          style: GoogleFonts.lato()
-                        ),
-                        SizedBox(
-                          height: 10.0,
-                        ),
-                        (!isDownloading)
-                            ? Column(
-                              children: [
+        barrierDismissible: false,
+        builder: (BuildContext context) {
+          return Dialog(
+            child: StatefulBuilder(
+              builder: (BuildContext context, setState) {
+                return Wrap(
+                  children: [
+                    Container(
+                      padding: EdgeInsets.all(10),
+                      child: (!isDownloading)
+                          ? Column(
+                              mainAxisAlignment: MainAxisAlignment.start,
+                              children: <Widget>[
+                                Text(
+                                  "Apply Wallpaper",
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.lato(
+                                      fontSize: 22.0, color: Color(0xffFF6363)),
+                                ),
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceEvenly,
+                                  children: [
+                                    TextButton.icon(
+                                        onPressed: () {
+                                          setState(() {
+                                            isDownloading = true;
+                                          });
+                                          _downloadAndApply(winfo.regularUrl,false);
+                                        },
+                                        icon: Icon(Icons.download,
+                                            color: Color(0xffFFAB76)),
+                                        label: Text(
+                                          'HD',
+                                          style: GoogleFonts.lato(
+                                              color: Color(0xffFFAB76)),
+                                        )),
+                                    TextButton.icon(
+                                        onPressed: () {
+                                          setState(() {
+                                            isDownloading = true;
+                                          });
+                                          _downloadAndApply(winfo.highUrl, false);
+                                        },
+                                        icon: Icon(Icons.download,
+                                            color: Color(0xffFF6363)),
+                                        label: Text(
+                                          "4K",
+                                          style: GoogleFonts.lato(
+                                              color: Color(0xffFF6363)),
+                                        )),
+                                  ],
+                                ),
                                 SizedBox(
-                                    width: 200.0,
-                                    child: MaterialButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          isDownloading = true;
-                                        });
-                                        _downloadAndApply(winfo.regularUrl);
-                                      },
-                                      color: Theme.of(context).primaryColor,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: <Widget>[
-                                          Icon(
-                                            Icons.file_download,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(
-                                            width: 10.0,
-                                          ),
-                                          Text(
-                                            "Regular HD",
-                                            style: GoogleFonts.lato(
-                                                color: Colors.white
-                                            ),
-                                          )
-                                        ],
-                                      ),
-                                    ),
-                                  ),
+                                  height: 10.0,
+                                ),
+                                Text(
+                                  "Edit & Share",
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.lato(
+                                      fontSize: 22.0, color: Color(0xffFFAB76)),
+                                ),
+                                TextButton.icon(
+                                    onPressed: () {
+                                      setState(() {
+                                        isDownloading = true;
+                                      });
+                                      _downloadAndApply(winfo.regularUrl,true);
+                                    },
+                                    icon: Icon(Icons.edit),
+                                    label: Text("Open Editor")),
                                 SizedBox(
-                                    width: 200.0,
-                                    child: MaterialButton(
-                                      onPressed: () {
-                                        setState(() {
-                                          isDownloading = true;
-                                        });
-                                        _downloadAndApply(winfo.highUrl);
-                                      },
-                                      color: Theme.of(context).primaryColor,
-                                      child: Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
-                                        children: <Widget>[
-                                          Icon(
-                                            Icons.file_download,
-                                            color: Colors.white,
-                                          ),
-                                          SizedBox(
-                                            width: 10.0,
-                                          ),
-                                          Text(
-                                            "4k High Quality",
-                                            style: GoogleFonts.lato(
-                                                color: Colors.white
-                                            ),
-                                          )
-                                        ],
-                                      ),
+                                  height: 10.0,
+                                ),
+                                Divider(
+                                  color: Colors.black,
+                                ),
+                                (winfo.description != null)
+                                    ? Text(
+                                        winfo.description,
+                                        style: GoogleFonts.lato(),
+                                      )
+                                    : Center(),
+                                Text(
+                                  "Published By " +
+                                      winfo.attribution +
+                                      " with ♥ Unsplash",
+                                  textAlign: TextAlign.left,
+                                  style: GoogleFonts.lato(),
+                                ),
+                                TextButton.icon(
+                                    onPressed: () {
+                                      Navigator.of(context).pop();
+                                    },
+                                    icon: Icon(
+                                      Icons.close,
+                                      color: Colors.red,
                                     ),
-                                  ),
+                                    label: Text(
+                                      "Cancel",
+                                      style: GoogleFonts.lato(
+                                          color: Color(0xffFF6363)),
+                                    )),
                               ],
                             )
-                            : Container(
-                                height: 200,
-                                width: 200,
-                                child: Lottie.asset("assets/download.json"),
-                              )
-                      ],
+                          : Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  "Downloading....",
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.lato(
+                                      fontSize: 22.0, color: Color(0xffFF6363)),
+                                ),
+                                CircularProgressIndicator()
+                              ],
+                            ),
                     ),
-                    padding: EdgeInsets.all(20.0),
-                  ),
-                ],
-              );
-            },
+                  ],
+                );
+              },
+            ),
           );
         });
   }
@@ -378,7 +384,7 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
     return true;
   }
 
-  _downloadAndApply(dl_url) async {
+  _downloadAndApply(dl_url , isEditor) async {
     // -- todo: Iamge set as wallpaper
     if (_checkAndGetPermission != null) {
       Dio _dio = new Dio();
@@ -389,15 +395,27 @@ class _SearchWallpaperState extends State<SearchWallpaper> {
 
       try {
         await _dio.download(dl_url, imagePath);
-        setState(() {
-          _localPathDl = imagePath;
-        });
 
-        await Wallpaperplugin.setAutoWallpaper(localFile: _localPathDl);
-        setState(() {
-          isDownloading = false;
-        });
-        Navigator.pop(context);
+        if(!isEditor){
+          await Wallpaperplugin.setAutoWallpaper(localFile: imagePath);
+
+          setState(() {
+            isDownloading = false;
+          });
+          Navigator.pop(context);
+        }else{
+          setState(() {
+            isDownloading = false;
+          });
+          // -- Move to Editor
+          Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => Editor(
+                        fileImage: File(imagePath),
+                      )));
+        }
+
       } on PlatformException catch (e) {
         print(e);
       }
